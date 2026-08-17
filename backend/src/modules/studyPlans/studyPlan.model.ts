@@ -1,4 +1,3 @@
-// backend/src/modules/studyPlans/studyPlan.model.ts
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 interface ITask {
@@ -10,7 +9,7 @@ interface ITask {
 export interface IStudyPlan extends Document {
   userId: Types.ObjectId;
   title: string;
-  tasks: ITask[];
+  tasks: Types.DocumentArray<ITask>;
   createdAt: Date;
   updatedAt: Date;
 }
