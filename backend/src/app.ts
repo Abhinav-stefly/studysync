@@ -6,7 +6,8 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import problemRoutes from "./modules/problems/problem.routes.js";
 import noteRoutes from "./modules/notes/note.routes.js";
-// ...
+import studyPlanRoutes from "./modules/studyPlans/studyPlan.routes.js";
+
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 app.use("/api/problems", problemRoutes);
+app.use("/api/study-plans", studyPlanRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", noteRoutes);
 app.use(notFoundHandler);
