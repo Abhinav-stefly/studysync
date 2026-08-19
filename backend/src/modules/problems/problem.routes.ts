@@ -10,6 +10,7 @@ router.use(protect); // every route below requires authentication
 
 router.post("/", validate(createProblemSchema), problemController.createProblem);
 router.get("/", problemController.listProblems);
+router.get("/popular", problemController.getPopularTopics);
 router.get("/:id", problemController.getProblem);
 router.patch("/:id", validate(updateProblemSchema), problemController.updateProblem);
 router.delete("/:id", problemController.deleteProblem);

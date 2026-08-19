@@ -31,3 +31,8 @@ export const deleteProblem = asyncHandler(async (req: AuthenticatedRequest, res:
   await problemService.deleteProblem(req.user!.userId, getParam(req.params.id));
   res.status(200).json({ success: true, message: "Problem deleted" });
 });
+
+export const getPopularTopics = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const data = await problemService.getPopularTopics();
+  res.status(200).json({ success: true, data });
+});
