@@ -46,7 +46,7 @@ export const updateProblem = async (userId: string, problemId: string, input: Up
   const problem = await Problem.findOneAndUpdate(
     { _id: problemId, userId },
     { $set: input },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   );
   if (!problem) {
     throw new AppError("Problem not found", 404);

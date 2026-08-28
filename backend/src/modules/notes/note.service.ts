@@ -43,7 +43,7 @@ export const updateNote = async (userId: string, noteId: string, input: UpdateNo
   const note = await Note.findOneAndUpdate(
     { _id: noteId, userId },
     { $set: input },
-    { new: true, runValidators: true }
+    {returnDocument: "after", runValidators: true }
   );
   if (!note) {
     throw new AppError("Note not found", 404);

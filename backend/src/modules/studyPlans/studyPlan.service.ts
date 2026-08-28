@@ -37,7 +37,7 @@ export const updateStudyPlan = async (userId: string, planId: string, input: Upd
   const plan = await StudyPlan.findOneAndUpdate(
     { _id: planId, userId },
     { $set: input },
-    { new: true, runValidators: true }
+    { returnDocument: "after", runValidators: true }
   );
   if (!plan) {
     throw new AppError("Study plan not found", 404);
