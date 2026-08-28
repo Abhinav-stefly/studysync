@@ -9,7 +9,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-        "worker:report": "tsx watch src/workers/report.worker.ts"
+        "worker:report": "tsx watch src/workers/report.worker.ts",
+        "schedule:reports": "tsx src/jobs/scheduleWeeklyReports.ts"
 
   },
   "devDependencies": {
