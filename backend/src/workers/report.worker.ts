@@ -1,20 +1,21 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import { Worker, Job } from "bullmq";
 import { createBullMQConnection } from "../config/queue.js";
 import { connectDB } from "../config/db.js";
 import { ReportJobData } from "../jobs/reportQueue.js";
+import { generateWeeklyReport } from "../modules/analytics/analytics.service.js";
+// ...rest unchanged
 
 const processReportJob = async (job: Job<ReportJobData>) => {
   console.log(`Processing report job ${job.id} for user ${job.data.userId}`);
 
-  // Placeholder — real report calculation logic comes in Phase 13
-  await new Promise((resolve) => setTimeout(resolve, 3000)); // simulate slow work
+  const report = await generateWeeklyReport(job.data.userId);
 
   console.log(`Finished report job ${job.id}`);
-  return { status: "completed", userId: job.data.userId };
+  return { status: "completed", reportId: report._id };
 };
+
 
 const startWorker = async () => {
   await connectDB(); // worker needs its own DB connection — it's a separate process
