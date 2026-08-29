@@ -1,6 +1,57 @@
 import { Problem } from "../problems/problem.model.js";
 import { ProgressReport } from "./progressReport.model.js";
+import mongoose from "mongoose"
+export const getDashboardStats = async (userId: string) => {
+  const [difficultyBreakdown, topicBreakdown, overallStats, recentReports] = await Promise.all([
+    Problem.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId), status: "solved" } },
+      { $group: { _id: "$difficulty", count: { $sum: 1 } } },
+      { $project: { _id: 0, difficulty: "$_id", count: 1 } },
+    ]),
 
+    Problem.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId), status: "solved" } },
+      { $group: { _id: "$topic", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+      { $project: { _id: 0, topic: "$_id", count: 1 } },
+    ]),
+
+    Problem.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          solved: { $sum: { $cond: [{ $eq: ["$status", "solved"] }, 1, 0] } },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          total: 1,
+          solved: 1,
+          completionRate: {
+            $cond: [
+              { $eq: ["$total", 0] },
+              0,
+              { $round: [{ $multiply: [{ $divide: ["$solved", "$total"] }, 100] }, 0] },
+            ],
+          },
+        },
+      },
+    ]),
+
+    ProgressReport.find({ userId }).sort("-weekStart").limit(8),
+  ]);
+
+  return {
+    difficultyBreakdown,
+    topicBreakdown,
+    overall: overallStats[0] || { total: 0, solved: 0, completionRate: 0 },
+    weeklyTrend: recentReports,
+  };
+};
 const getWeekBoundaries = () => {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0 = Sunday
