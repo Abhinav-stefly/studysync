@@ -4,6 +4,7 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 import { AuthenticatedRequest } from "../../middleware/auth.js";
 import { Response } from "express";
 import { reportQueue } from "../../jobs/reportQueue.js";
+import { getDashboardStats } from "./analytics.controller.js";
 
 const router = Router();
 router.use(protect);
@@ -15,5 +16,7 @@ router.post(
     res.status(202).json({ success: true, message: "Report generation started", jobId: job.id });
   })
 );
+
+router.get("/dashboard", getDashboardStats);
 
 export default router;
