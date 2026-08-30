@@ -9,9 +9,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-        "worker:report": "tsx watch src/workers/report.worker.ts",
-        "schedule:reports": "tsx src/jobs/scheduleWeeklyReports.ts"
-
+    "worker:report": "tsx watch src/workers/report.worker.ts",
+    "schedule:reports": "tsx src/jobs/scheduleWeeklyReports.ts"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -31,6 +30,7 @@
     "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.2",
+    "openai": "^7.8.0",
     "socket.io": "^4.8.3",
     "zod": "^4.4.3"
   }
