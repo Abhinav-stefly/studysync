@@ -10,6 +10,8 @@ import noteRoutes from "./modules/notes/note.routes.js";
 import studyPlanRoutes from "./modules/studyPlans/studyPlan.routes.js";
 import studyRoomRoutes from "./modules/studyRooms/studyRoom.routes.js";
 import analyticsRoutes from "./modules/analytics/analytics.routes.js";
+import aiRoutes from "./modules/ai/ai.routes.js";
+// ...
 
 const app = express();
 
@@ -34,7 +36,7 @@ app.use("/api/notes", noteRoutes);
 app.use("/api/study-plans", studyPlanRoutes);
 app.use("/api/study-rooms", studyRoomRoutes);
 app.use("/api/analytics", analyticsRoutes);
-
+app.use("/api/ai", aiRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
