@@ -1,4 +1,6 @@
 import express from "express";
+import helmet from "helmet";
+import cors from "cors";
 import cookieParser from "cookie-parser";
 import { requestLogger } from "./middleware/requestLogger.js";
 import { notFoundHandler } from "./middleware/notFoundHandler.js";
@@ -15,6 +17,25 @@ import aiRoutes from "./modules/ai/ai.routes.js";
 
 const app = express();
 
+const allowedOrigins = (process.env.CORS_ORIGIN || "").split(",").map((o) => o.trim());
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (Postman, curl, server-to-server) —
+      // browsers always send an Origin header for cross-origin requests,
+      // so this only affects non-browser tools, not real CORS enforcement.
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // required: your refresh token is an httpOnly cookie,
+                        // and cookies are only sent cross-origin if this is true
+                        // on BOTH the server (here) and the client (fetch's credentials: "include")
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use(requestLogger);
@@ -25,6 +46,7 @@ const globalLimiter = rateLimiter({
   keyPrefix: "global",
 });
 app.use(globalLimiter);
+app.use(helmet());
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
