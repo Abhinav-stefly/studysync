@@ -16,7 +16,7 @@ export const listNotes = async (userId: string, query: ListNotesQuery) => {
   const skip = (page - 1) * limit;
 
   const [notes, total] = await Promise.all([
-    Note.find(filter).sort("-createdAt").skip(skip).limit(limit),
+Note.find(filter).sort("-createdAt").skip(skip).limit(limit).populate("problem", "title"),
     Note.countDocuments(filter),
   ]);
 
@@ -32,7 +32,7 @@ export const listNotes = async (userId: string, query: ListNotesQuery) => {
 };
 
 export const getNoteById = async (userId: string, noteId: string) => {
-  const note = await Note.findOne({ _id: noteId, userId });
+ const note = await Note.findOne({ _id: noteId, userId }).populate("problem", "title");
   if (!note) {
     throw new AppError("Note not found", 404);
   }
