@@ -4,6 +4,7 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { ProblemsPage } from "./pages/problems/ProblemsPage";
+import { NotesPage } from "./pages/notes/NotesPage";
 function App() {
   return (
     <Routes>
@@ -13,8 +14,10 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
         <Route path="/" element={<ProblemsPage />} />
-          <Route path="/" element={<div className="font-display text-2xl">Problems (placeholder)</div>} />
-          <Route path="/notes" element={<div className="font-display text-2xl">Notes (placeholder)</div>} />
+         
+        
+// ...
+          <Route path="/notes" element={<NotesPage />} />
           <Route path="/plans" element={<div className="font-display text-2xl">Study plans (placeholder)</div>} />
           <Route path="/rooms" element={<div className="font-display text-2xl">Study rooms (placeholder)</div>} />
           <Route path="/analytics" element={<div className="font-display text-2xl">Analytics (placeholder)</div>} />
