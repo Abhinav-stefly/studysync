@@ -5,6 +5,14 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { ProblemsPage } from "./pages/problems/ProblemsPage";
 import { NotesPage } from "./pages/notes/NotesPage";
+import { StudyPlansPage } from "./pages/studyPlans/StudyPlansPage";
+import { StudyRoomsPage } from "./pages/studyRooms/StudyRoomsPage";
+import { StudyRoomViewPage } from "./pages/studyRooms/StudyRoomViewPage";
+// ...
+
+
+
+
 function App() {
   return (
     <Routes>
@@ -18,6 +26,9 @@ function App() {
         
 // ...
           <Route path="/notes" element={<NotesPage />} />
+          <Route path="/plans" element={<StudyPlansPage />} />
+          <Route path="/rooms" element={<StudyRoomsPage />} />
+          <Route path="/rooms/:id" element={<StudyRoomViewPage />} />
           <Route path="/plans" element={<div className="font-display text-2xl">Study plans (placeholder)</div>} />
           <Route path="/rooms" element={<div className="font-display text-2xl">Study rooms (placeholder)</div>} />
           <Route path="/analytics" element={<div className="font-display text-2xl">Analytics (placeholder)</div>} />
