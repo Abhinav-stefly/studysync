@@ -7,6 +7,7 @@ const navItems = [
   { to: "/plans", label: "Study plans" },
   { to: "/rooms", label: "Study rooms" },
   { to: "/analytics", label: "Analytics" },
+  { to: "/ai", label: "AI tools" },
 ];
 
 export const Sidebar = () => {
