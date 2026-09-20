@@ -64,3 +64,6 @@ axiosClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// add alongside setAccessToken
+export const getAccessToken = () => accessToken;
