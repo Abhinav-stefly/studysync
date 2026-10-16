@@ -5,6 +5,7 @@ import app from "./app.js";
 import { connectDB } from "./config/db.js";
 import { connectRedis } from "./config/redis.js";
 import { initSocketServer } from "./sockets/index.js";
+import { logger } from "./config/logger.js";
 import "./config/llm.js";
 
 const PORT = process.env.PORT || 5000;
@@ -17,7 +18,7 @@ const startServer = async () => {
   initSocketServer(httpServer);
 
   httpServer.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info(`Server running on port ${PORT}`);
   });
 };
 

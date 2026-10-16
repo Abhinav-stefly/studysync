@@ -1,7 +1,8 @@
 import { beforeAll, afterAll, afterEach } from "vitest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
-
+import "dotenv/config"
+process.env.LOG_LEVEL = "silent";
 let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {

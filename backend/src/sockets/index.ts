@@ -2,6 +2,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { Server as HTTPServer } from "http";
 import { verifyAccessToken } from "../modules/auth/token.utils.js";
 import { isRoomMember, createMessage } from "../modules/studyRooms/studyRoom.service.js";
+import { logger } from "../config/logger.js";
 
 interface SocketUser {
   userId: string;
@@ -37,7 +38,7 @@ export const initSocketServer = (httpServer: HTTPServer) => {
 
   io.on("connection", (socket) => {
     const userId = socket.user!.userId;
-    console.log(`Socket connected: ${socket.id} (user: ${userId})`);
+    logger.info(`Socket connected: ${socket.id} (user: ${userId})`);
 
     socket.on("room:join", async (roomId: string) => {
       const isMember = await isRoomMember(roomId, userId);
@@ -86,7 +87,7 @@ export const initSocketServer = (httpServer: HTTPServer) => {
     });
 
     socket.on("disconnect", () => {
-      console.log(`Socket disconnected: ${socket.id} (user: ${userId})`);
+      logger.info(`Socket disconnected: ${socket.id} (user: ${userId})`);
     });
   });
 
