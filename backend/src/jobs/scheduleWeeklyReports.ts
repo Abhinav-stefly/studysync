@@ -2,12 +2,12 @@ import "dotenv/config";
 import { connectDB } from "../config/db.js";
 import { User } from "../modules/users/user.model.js";
 import { reportQueue } from "./reportQueue.js";
-
+import { logger } from "../config/logger.js";
 const scheduleForAllUsers = async () => {
   await connectDB();
 
   const users = await User.find().select("_id");
-  console.log(`Scheduling weekly reports for ${users.length} users`);
+  logger.info(`Scheduling weekly reports for ${users.length} users`);
 
   for (const user of users) {
     await reportQueue.upsertJobScheduler(
@@ -20,7 +20,7 @@ const scheduleForAllUsers = async () => {
     );
   }
 
-  console.log("Weekly report schedule registered for all users");
+  logger.info("Weekly report schedule registered for all users");
   process.exit(0);
 };
 

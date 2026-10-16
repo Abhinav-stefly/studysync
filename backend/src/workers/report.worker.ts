@@ -5,14 +5,15 @@ import { createBullMQConnection } from "../config/queue.js";
 import { connectDB } from "../config/db.js";
 import { ReportJobData } from "../jobs/reportQueue.js";
 import { generateWeeklyReport } from "../modules/analytics/analytics.service.js";
+import { logger } from "../config/logger.js";
 // ...rest unchanged
 
 const processReportJob = async (job: Job<ReportJobData>) => {
-  console.log(`Processing report job ${job.id} for user ${job.data.userId}`);
+  logger.info(`Processing report job ${job.id} for user ${job.data.userId}`);
 
   const report = await generateWeeklyReport(job.data.userId);
 
-  console.log(`Finished report job ${job.id}`);
+  logger.info(`Finished report job ${job.id}`);
   return { status: "completed", reportId: report._id };
 };
 
@@ -26,14 +27,17 @@ const startWorker = async () => {
   });
 
   worker.on("completed", (job) => {
-    console.log(`Job ${job.id} completed successfully`);
+    logger.info(`Job ${job.id} completed successfully`);
   });
 
-  worker.on("failed", (job, err) => {
-    console.error(`Job ${job?.id} failed:`, err.message);
-  });
+worker.on("failed", (job, err) => {
+  logger.error(
+    { jobId: job?.id, err },
+    "Job failed"
+  );
+});
 
-  console.log("Report worker started, waiting for jobs...");
+  logger.info("Report worker started, waiting for jobs...");
 };
 
 startWorker();
