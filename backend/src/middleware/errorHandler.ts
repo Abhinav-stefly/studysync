@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
- import mongoose from "mongoose";
+import mongoose from "mongoose";
+
 export class AppError extends Error {
   statusCode: number;
 
@@ -15,10 +16,9 @@ export const errorHandler = (
   err: Error | AppError | ZodError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) => {
   if (err instanceof ZodError) {
-    console.error(`[ERROR] ${req.method} ${req.originalUrl} -> Validation failed`);
     res.status(400).json({
       success: false,
       message: "Validation failed",
@@ -30,24 +30,24 @@ export const errorHandler = (
     return;
   }
 
- 
+  if (err instanceof mongoose.Error.CastError) {
+    res.status(400).json({ success: false, message: "Invalid resource ID format" });
+    return;
+  }
 
-// inside errorHandler, before the generic AppError/500 branch:
-if (err instanceof mongoose.Error.CastError) {
-  console.error(`[ERROR] ${req.method} ${req.originalUrl} -> Invalid ID format`);
-  res.status(400).json({
-    success: false,
-    message: "Invalid resource ID format",
-  });
-  return;
-}
-  const statusCode = err instanceof AppError ? err.statusCode : 500;
-  const message = err.message || "Internal Server Error";
+  const isAppError = err instanceof AppError;
+  const statusCode = isAppError ? err.statusCode : 500;
 
-  console.error(`[ERROR] ${req.method} ${req.originalUrl} -> ${message}`);
+  // 4xx errors are already logged at "warn" by pino-http's completion line.
+  // Only 5xx need the stack trace here, and logging both would double up.
+  if (statusCode >= 500) {
+    req.log.error({ err }, "Request failed");
+  }
 
   res.status(statusCode).json({
     success: false,
-    message,
+    // Expected errors (AppError) have messages written for clients.
+    // Anything else is an unexpected crash, and its message could expose internals.
+    message: isAppError ? err.message : "Internal Server Error",
   });
 };

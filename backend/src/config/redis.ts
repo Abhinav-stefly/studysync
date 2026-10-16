@@ -1,5 +1,5 @@
 import { Redis } from "ioredis";
-
+import { logger } from "./logger.js";
 let redisClient: Redis | null = null;
 
 export const connectRedis = (): Redis => {
@@ -12,11 +12,11 @@ export const connectRedis = (): Redis => {
   redisClient = new Redis(redisUrl);
 
   redisClient.on("connect", () => {
-    console.log("Redis connected successfully");
+    logger.info("Redis connected successfully");
   });
 
   redisClient.on("error", (err) => {
-    console.error("Redis connection error:", err);
+   logger.error({ err }, "Redis connection error");
   });
 
   return redisClient;
