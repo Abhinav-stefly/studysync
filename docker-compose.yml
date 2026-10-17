@@ -1,0 +1,21 @@
+x-backend: &backend
+  build: ./backend
+  image: studysync-backend
+  env_file: ./backend/.env
+  restart: unless-stopped
+
+services:
+  api:
+    <<: *backend
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  worker:
+    <<: *backend
+    command: ["node", "dist/workers/report.worker.js"]
