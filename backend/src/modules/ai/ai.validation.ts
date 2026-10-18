@@ -11,7 +11,7 @@ export const generateStudyPlanSchema = z.object({
     .number()
     .int()
     .min(1, "Duration must be at least 1 day")
-    .max(900, "Duration cannot exceed 90 days"), // hard ceiling — also a cost control lever
+    .max(90, "Duration cannot exceed 90 days"), // hard ceiling — also a cost control lever
 });
 
 export type GenerateStudyPlanInput = z.infer<typeof generateStudyPlanSchema>;
