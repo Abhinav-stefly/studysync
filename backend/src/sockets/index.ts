@@ -3,6 +3,10 @@ import { Server as HTTPServer } from "http";
 import { verifyAccessToken } from "../modules/auth/token.utils.js";
 import { isRoomMember, createMessage } from "../modules/studyRooms/studyRoom.service.js";
 import { logger } from "../config/logger.js";
+import { allowedOrigins } from "../config/cors.js";
+
+// ...
+
 
 interface SocketUser {
   userId: string;
@@ -17,10 +21,10 @@ declare module "socket.io" {
 
 export const initSocketServer = (httpServer: HTTPServer) => {
   const io = new SocketIOServer(httpServer, {
-    cors: {
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
-      credentials: true,
-    },
+   cors: {
+  origin: allowedOrigins,
+  credentials: true,
+},
   });
 
   io.use((socket, next) => {
@@ -93,3 +97,4 @@ export const initSocketServer = (httpServer: HTTPServer) => {
 
   return io;
 };
+
