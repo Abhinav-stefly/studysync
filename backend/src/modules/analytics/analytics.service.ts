@@ -1,6 +1,7 @@
 import { Problem } from "../problems/problem.model.js";
 import { ProgressReport } from "./progressReport.model.js";
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import { getWeekBoundaries, type ReportPeriod } from "./weekBoundaries.js";
 export const getDashboardStats = async (userId: string) => {
   const [difficultyBreakdown, topicBreakdown, overallStats, recentReports] = await Promise.all([
     Problem.aggregate([
@@ -52,22 +53,10 @@ export const getDashboardStats = async (userId: string) => {
     weeklyTrend: recentReports,
   };
 };
-const getWeekBoundaries = () => {
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0 = Sunday
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - dayOfWeek);
-  weekStart.setHours(0, 0, 0, 0);
 
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 7);
 
-  return { weekStart, weekEnd };
-};
-
-export const generateWeeklyReport = async (userId: string) => {
-  const { weekStart, weekEnd } = getWeekBoundaries();
-
+export const generateWeeklyReport = async (userId: string, period: ReportPeriod = "current") => {
+  const { weekStart, weekEnd } = getWeekBoundaries(period);
   const problemsSolved = await Problem.countDocuments({
     userId,
     status: "solved",
