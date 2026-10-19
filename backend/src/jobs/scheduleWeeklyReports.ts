@@ -1,27 +1,15 @@
-import "dotenv/config";
-import { connectDB } from "../config/db.js";
-import { User } from "../modules/users/user.model.js";
 import { reportQueue } from "./reportQueue.js";
 import { logger } from "../config/logger.js";
-const scheduleForAllUsers = async () => {
-  await connectDB();
 
-  const users = await User.find().select("_id");
-  logger.info(`Scheduling weekly reports for ${users.length} users`);
+export const SCHEDULE_ALL_JOB = "schedule-all-reports";
 
-  for (const user of users) {
-    await reportQueue.upsertJobScheduler(
-      `weekly-report-${user._id}`, // stable scheduler ID — re-running this updates, not duplicates
-      { pattern: "0 0 * * 0"  }, // every Sunday at midnight
-      {
-        name: "generate-report",
-        data: { userId: user._id.toString() },
-      }
-    );
-  }
-
-  logger.info("Weekly report schedule registered for all users");
-  process.exit(0);
+// One schedule for the whole system. The stable ID means calling this on
+// every boot updates the same entry instead of creating a duplicate.
+export const registerWeeklyReportSchedule = async () => {
+  await reportQueue.upsertJobScheduler(
+    "weekly-report-fanout",
+    { pattern: "0 0 * * 0" }, // Sunday 00:00 (UTC on Render)
+    { name: SCHEDULE_ALL_JOB, data: {} }
+  );
+  logger.info("Weekly report schedule registered");
 };
-
-scheduleForAllUsers();
