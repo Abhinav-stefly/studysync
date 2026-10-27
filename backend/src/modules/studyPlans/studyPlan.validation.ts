@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const taskInputSchema = z.object({
-  name: z.string().min(1).max(100),
+  name: z.string().min(1).max(700),
   completed: z.boolean().optional().default(false),
   deadline: z.coerce.date().optional(),
 });
