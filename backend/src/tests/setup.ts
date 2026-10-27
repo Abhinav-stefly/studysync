@@ -1,21 +1,44 @@
-import { beforeAll, afterAll, afterEach } from "vitest";
+import "dotenv/config";
+import { beforeAll, afterAll, afterEach, vi } from "vitest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
-import "dotenv/config"
+
 process.env.LOG_LEVEL = "silent";
+
+vi.mock("../config/llm.js", () => ({
+  llmClient: { chat: { completions: { create: vi.fn() } } },
+  LLM_MODEL: "test-model",
+}));
+
+vi.mock("../config/redis.js", () => {
+  const store = new Map<string, number>();
+  return {
+    getRedisClient: () => ({
+      incr: async (key: string) => {
+        const next = (store.get(key) ?? 0) + 1;
+        store.set(key, next);
+        return next;
+      },
+      expire: async () => 1,
+      get: async () => null,
+      set: async () => "OK",
+    }),
+  };
+});
+
+vi.mock("../jobs/reportQueue.js", () => ({
+  reportQueue: { add: vi.fn(), upsertJobScheduler: vi.fn(), addBulk: vi.fn() },
+}));
+
 let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
-  await mongoose.connect(uri);
+  await mongoose.connect(mongoServer.getUri());
 });
 
 afterEach(async () => {
-  // Wipe all collections between individual tests — this is what
-  // guarantees test A's data can never leak into or affect test B.
-  // Same "why this matters" as your IDOR scoping: isolation prevents
-  // one thing from silently affecting another it shouldn't touch.
+  // Fresh, empty collections for every test, so tests can't affect each other
   const collections = mongoose.connection.collections;
   for (const key in collections) {
     await collections[key].deleteMany({});
