@@ -4,59 +4,64 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
 
 export const axiosClient = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // sends the httpOnly refresh cookie on every request
+  withCredentials: true, // sends the httpOnly refresh cookie
 });
 
-// In-memory token storage — a plain variable, not React state, because
-// this file isn't a component and can't use hooks. AuthContext (next step)
-// will be the source of truth for UI purposes; this is just where the
-// interceptor reads the CURRENT token at request time.
+// In-memory only: a plain variable, because the interceptors below run outside
+// React. AuthContext keeps it in sync with the user state.
 let accessToken: string | null = null;
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
 };
 
+export const getAccessToken = () => accessToken;
+
 axiosClient.interceptors.request.use((config) => {
+  // Runs again on a retried request, so it overwrites the stale token
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
 });
 
-let isRefreshing = false;
-let refreshQueue: (() => void)[] = [];
+// These endpoints answer 401 as a normal outcome (wrong password, no session).
+// Retrying them through a refresh would loop or hide the real error.
+const NO_REFRESH_PATHS = ["/auth/login", "/auth/register", "/auth/refresh"];
+
+// All requests that fail while a refresh is running wait on this one promise.
+let refreshPromise: Promise<void> | null = null;
+
+const refreshAccessToken = (): Promise<void> => {
+  if (!refreshPromise) {
+    refreshPromise = axiosClient
+      .post("/auth/refresh")
+      .then((res) => {
+        setAccessToken(res.data.data.accessToken as string);
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+};
 
 axiosClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const original = error.config;
+    const isAuthRequest = NO_REFRESH_PATHS.some((p) => original?.url?.includes(p));
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        // A refresh is already in flight (e.g. two requests failed at once) —
-        // queue this request to retry once that refresh finishes, instead of
-        // firing a second parallel refresh call.
-        return new Promise((resolve) => {
-          refreshQueue.push(() => resolve(axiosClient(originalRequest)));
-        });
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
+    if (error.response?.status === 401 && original && !original._retry && !isAuthRequest) {
+      original._retry = true; // at most one retry per request
       try {
-        const { data } = await axiosClient.post("/auth/refresh");
-        setAccessToken(data.accessToken);
-        isRefreshing = false;
-        refreshQueue.forEach((cb) => cb());
-        refreshQueue = [];
-        return axiosClient(originalRequest);
+        await refreshAccessToken();
+        return axiosClient(original);
       } catch (refreshError) {
-        isRefreshing = false;
-        refreshQueue = [];
         setAccessToken(null);
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }
@@ -64,6 +69,3 @@ axiosClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// add alongside setAccessToken
-export const getAccessToken = () => accessToken;
