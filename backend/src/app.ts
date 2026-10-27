@@ -48,6 +48,10 @@ const globalLimiter = rateLimiter({
 app.use(globalLimiter);
 app.use(helmet());
 
+app.use("/api", (_req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });

@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler.js";
-import { registerUser, loginUser } from "./auth.service.js";
+import { registerUser, loginUser, refreshSession } from "./auth.service.js";
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
+  path: "/api/auth", // only sent to auth routes, not to every request
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days, in ms
 };
 
@@ -22,6 +23,11 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
 
+  res.status(200).json({ success: true, data: { user, accessToken } });
+});
+
+export const refresh = asyncHandler(async (req: Request, res: Response) => {
+  const { user, accessToken } = await refreshSession(req.cookies?.refreshToken);
   res.status(200).json({ success: true, data: { user, accessToken } });
 });
 
