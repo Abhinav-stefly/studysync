@@ -1,10 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchProblems, updateProblemStatus, deleteProblem, type ProblemFilters, type Problem } from "../../api/problems.api";
+import { createProblem } from "../../api/problems.api";
 
 export const useProblems = (filters: ProblemFilters) => {
   return useQuery({
     queryKey: ["problems", filters],
     queryFn: () => fetchProblems(filters),
+  });
+};
+
+export const useCreateProblem = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createProblem,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["problems"] }),
   });
 };
 

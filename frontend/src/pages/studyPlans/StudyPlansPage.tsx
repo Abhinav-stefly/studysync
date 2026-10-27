@@ -6,6 +6,7 @@ import {
   useUpdateTaskStatus,
 } from "./useStudyPlans";
 import type { StudyPlan } from "../../api/studyPlans.api";
+import { getApiErrorMessage } from "../../lib/apiError";
 
 export const StudyPlansPage = () => {
   const { data: plans, isLoading, error } = useStudyPlans();
@@ -101,19 +102,33 @@ const PlanCard = ({ plan, onDelete }: { plan: StudyPlan; onDelete: () => void })
 const CreatePlanForm = ({ onDone }: { onDone: () => void }) => {
   const [title, setTitle] = useState("");
   const [taskNames, setTaskNames] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const createPlan = useCreateStudyPlan();
 
   const handleSubmit = async () => {
+    setError(null);
+
     const tasks = taskNames
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean)
       .map((name) => ({ name }));
 
-    if (!title.trim() || tasks.length === 0) return;
+    if (!title.trim()) {
+      setError("Give the plan a title.");
+      return;
+    }
+    if (tasks.length === 0) {
+      setError("Add at least one task. Type one per line.");
+      return;
+    }
 
-    await createPlan.mutateAsync({ title, tasks });
-    onDone();
+    try {
+      await createPlan.mutateAsync({ title: title.trim(), tasks });
+      onDone();
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    }
   };
 
   return (
@@ -132,6 +147,7 @@ const CreatePlanForm = ({ onDone }: { onDone: () => void }) => {
         rows={5}
         className="w-full font-sans text-sm text-ink focus:outline-none"
       />
+      {error && <p className="mt-2 font-sans text-sm text-rust">{error}</p>}
       <div className="mt-3 flex justify-end gap-3">
         <button onClick={onDone} className="font-sans text-sm text-ink/50 hover:text-ink">
           Cancel
